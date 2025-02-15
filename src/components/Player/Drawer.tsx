@@ -7,11 +7,18 @@ class Drawer {
 
   private parent: HTMLElement;
   private getCurrentTime: () => number;
+  private seekTo: (time: number) => void;
 
-  constructor(buffer: AudioBuffer, parent: HTMLElement, getCurrentTime: () => number) {
+  constructor(
+    buffer: AudioBuffer,
+    parent: HTMLElement,
+    getCurrentTime: () => number,
+    seekTo: (time: number) => void
+  ) {
     this.buffer = buffer;
     this.parent = parent;
     this.getCurrentTime = getCurrentTime;
+    this.seekTo = seekTo;
   }
 
   private getTimeDomain() {
@@ -56,8 +63,12 @@ class Drawer {
       .domain(domain.map((i: string | number) => Number(i)))
       .range([margin.top, height - margin.bottom]); // растягивает данные по вертикали
 
-      const svg = d3.create('svg')
-      .attr('viewBox', `0 -${margin.top + 20} ${width} ${height + margin.top + 20}`) // Добавил верхний отступ
+    const svg = d3
+      .create('svg')
+      .attr(
+        'viewBox',
+        `0 -${margin.top + 20} ${width} ${height + margin.top + 20}`
+      ) // Добавил верхний отступ
       .style('width', this.parent.clientWidth)
       .style('height', this.parent.clientHeight)
       .style('display', 'block');
@@ -132,35 +143,65 @@ class Drawer {
       .style('font-wight', 400)
       .call(d3.axisBottom(bandScale.copy()));
 
-      const cursorGroup = svg.append('g'); // Группа для курсора и треугольника
+    const cursorGroup = svg.append('g'); // Группа для курсора и треугольника
 
-      const cursor = cursorGroup.append('line') // Линия курсора
-        .attr('y1', 0)
-        .attr('y2', height)
-        .attr('stroke', 'gray')
-        .attr('stroke-width', 1);
-    
-      const triangleSize = 10;
-    
-      const triangle = cursorGroup.append('polygon')
-        .attr('fill', 'gray');
-    
-      const updateCursor = () => {
-        const currentTime = this.getCurrentTime();
-        const position = xScale((currentTime / this.buffer.duration) * audioData.length);
-    
-        cursor.attr('x1', position).attr('x2', position);
-    
-        triangle
-          .attr('points', `
+    const cursor = cursorGroup
+      .append('line') // Линия курсора
+      .attr('y1', 0)
+      .attr('y2', height)
+      .attr('stroke', 'gray')
+      .attr('stroke-width', 2)
+      .style('pointer-events', 'all')
+      .style('cursor', 'grabbing');
+
+    const triangleSize = 10;
+
+    const triangle = cursorGroup.append('polygon').attr('fill', 'gray');
+
+    const updateCursor = () => {
+      const currentTime = this.getCurrentTime();
+      const position = xScale(
+        (currentTime / this.buffer.duration) * audioData.length
+      );
+
+      cursor.attr('x1', position).attr('x2', position);
+
+      triangle.attr(
+        'points',
+        `
             ${position - triangleSize},${-triangleSize * 1.5}  
             ${position + triangleSize},${-triangleSize * 1.5}  
             ${position},${-triangleSize * 0.5}  
-          `);
-      };
-    
-      updateCursor(); 
-      setInterval(updateCursor, 1000);
+          `
+      );
+    };
+
+    let isDragging = false;
+
+    const onMouseMove = (event: MouseEvent) => {
+      if (!isDragging) return;
+      const rect = this.parent.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const time = (x / width) * this.buffer.duration;
+      this.seekTo(time);
+    };
+
+    const onMouseDown = () => {
+      isDragging = true;
+      this.parent.style.cursor = 'grabbing';
+    };
+
+    const onMouseUp = () => {
+      isDragging = false;
+      this.parent.style.cursor = 'default';
+    };
+
+    svg.on('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+    updateCursor();
+    setInterval(updateCursor, 1000);
 
     return svg;
   }

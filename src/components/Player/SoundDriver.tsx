@@ -43,7 +43,7 @@ class SoundDriver {
       reader.onload = (event: ProgressEvent<FileReader>) =>
         this.loadSound(event).then(buffer => {
           this.audioBuffer = buffer;
-          this.drawer = new Drawer(buffer, parent , this.getCurrentTime.bind(this));
+          this.drawer = new Drawer(buffer, parent , this.getCurrentTime.bind(this), this.seekTo.bind(this));
           resolve(undefined);
         });
       reader.onerror = reject;
@@ -62,9 +62,29 @@ class SoundDriver {
 
   public getCurrentTime() {
     if (!this.isRunning) {
-      return this.pausedAt; // Если пауза, возвращаем, где остановились
+      return this.pausedAt;
     }
     return this.context.currentTime - this.startedAt;
+  }
+
+  public seekTo(time: number) {
+    if (!this.audioBuffer) {
+      throw new Error('Audio buffer not uploaded');
+    }
+  
+    if (time < 0 || time > this.audioBuffer.duration) {
+      throw new Error('incorrect time');
+    }
+  
+    if (this.isRunning) {
+      this.pause();
+    }
+  
+    this.pausedAt = time;
+  
+    if (this.isRunning) {
+      this.play();
+    }
   }
 
   public async play() { // создаёт звуковой источник, подключает его к громкости (GainNode) и воспроизводит звук
