@@ -68,38 +68,12 @@ class Drawer {
       .attr(
         'viewBox',
         `0 -${margin.top + 20} ${width} ${height + margin.top + 20}`
-      ) // Добавил верхний отступ
+      )
       .style('width', this.parent.clientWidth)
       .style('height', this.parent.clientHeight)
       .style('display', 'block');
 
-    svg // рисуем сетку
-      .append('g')
-      .attr('stroke-width', 0.5)
-      .attr('stroke', '#D6E5D6')
-      .call((g: Selection<SVGGElement, unknown, null, undefined>) =>
-        g
-          .append('g')
-          .selectAll('line')
-          .data<number>(yScale.ticks())
-          .join('line')
-          .attr('x1', (d: number) => 0.5 + xScale(d))
-          .attr('x2', (d: number) => 0.5 + xScale(d))
-          .attr('y1', 0)
-          .attr('y2', this.parent.clientHeight)
-      )
-      .call((g: Selection<SVGGElement, unknown, null, undefined>) =>
-        g
-          .append('g')
-          .selectAll('line')
-          .data<number>(yScale.ticks())
-          .join('line')
-          .attr('y1', (d: number) => yScale(d))
-          .attr('y2', (d: number) => yScale(d))
-          .attr('x1', 0)
-          .attr('x2', this.parent.clientWidth)
-      );
-
+    
     svg
       .append('rect')
       .attr('width', width)
@@ -113,10 +87,14 @@ class Drawer {
 
     const band = (width - margin.left - margin.right) / audioData.length;
 
-    g.selectAll('rect') // Рисуем прямоугольники для волны
-      .data(audioData) // привязываем данные audioData
+    const colorScale = d3
+      .scaleSequential(d3.interpolateTurbo) // Градиентный цвет
+      .domain([Math.min(...audioData), Math.max(...audioData)]);
+
+    g.selectAll('rect')
+      .data(audioData)
       .join('rect')
-      .attr('fill', '#03A300')
+      .attr('fill', (d: number) => colorScale(d))
       .attr('height', (d: number) => yScale(d))
       .attr('width', () => band * padding)
       .attr('x', (_: unknown, i: number) => xScale(i))
@@ -149,14 +127,15 @@ class Drawer {
       .append('line') // Линия курсора
       .attr('y1', 0)
       .attr('y2', height)
-      .attr('stroke', 'gray')
+      .attr('stroke', '#ff4500')
       .attr('stroke-width', 2)
       .style('pointer-events', 'all')
-      .style('cursor', 'grabbing');
+      .style('cursor', 'grabbing')
+      .style("opacity", 0.8);
 
     const triangleSize = 10;
 
-    const triangle = cursorGroup.append('polygon').attr('fill', 'gray');
+    const triangle = cursorGroup.append('polygon').attr('fill', '#ff4500').style("opacity", 0.9);
 
     const updateCursor = () => {
       const currentTime = this.getCurrentTime();
