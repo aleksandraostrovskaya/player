@@ -73,7 +73,6 @@ class Drawer {
       .style('height', this.parent.clientHeight)
       .style('display', 'block');
 
-    
     svg
       .append('rect')
       .attr('width', width)
@@ -131,11 +130,14 @@ class Drawer {
       .attr('stroke-width', 2)
       .style('pointer-events', 'all')
       .style('cursor', 'grabbing')
-      .style("opacity", 0.8);
+      .style('opacity', 0.8);
 
     const triangleSize = 10;
 
-    const triangle = cursorGroup.append('polygon').attr('fill', '#ff4500').style("opacity", 0.9);
+    const triangle = cursorGroup
+      .append('polygon')
+      .attr('fill', '#ff4500')
+      .style('opacity', 0.9);
 
     const updateCursor = () => {
       const currentTime = this.getCurrentTime();
@@ -156,28 +158,36 @@ class Drawer {
     };
 
     let isDragging = false;
+    let lastTime = 0;
 
     const onMouseMove = (event: MouseEvent) => {
       if (!isDragging) return;
       const rect = this.parent.getBoundingClientRect();
       const x = event.clientX - rect.left;
-      const time = (x / width) * this.buffer.duration;
-      this.seekTo(time);
+      lastTime = (x / width) * this.buffer.duration;
+      this.seekTo(lastTime);
+      updateCursor();
     };
 
-    const onMouseDown = () => {
+    const onMouseDown = (event: MouseEvent) => {
       isDragging = true;
       this.parent.style.cursor = 'grabbing';
+      event.preventDefault();
+      onMouseMove(event);
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
     };
 
     const onMouseUp = () => {
       isDragging = false;
       this.parent.style.cursor = 'default';
+      this.seekTo(lastTime);
+      updateCursor();
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
     };
 
     svg.on('mousedown', onMouseDown);
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
 
     updateCursor();
     setInterval(updateCursor, 1000);

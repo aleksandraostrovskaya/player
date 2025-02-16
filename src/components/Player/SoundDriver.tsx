@@ -1,17 +1,13 @@
 import Drawer from './Drawer';
 
 class SoundDriver {
-  private readonly audiFile;
-
+  private readonly audioFile;
   private drawer?: Drawer;
 
   private context: AudioContext;
-
-  private gainNode?: GainNode = undefined;
-
-  private audioBuffer?: AudioBuffer = undefined;
-
-  private bufferSource?: AudioBufferSourceNode = undefined;
+  private gainNode?: GainNode;
+  private audioBuffer?: AudioBuffer;
+  private bufferSource?: AudioBufferSourceNode;
   private startedAt = 0;
 
   private pausedAt = 0;
@@ -19,7 +15,7 @@ class SoundDriver {
   private isRunning = false;
 
   constructor(audioFile: Blob) {
-    this.audiFile = audioFile;
+    this.audioFile = audioFile;
     this.context = new AudioContext();
   }
 
@@ -36,7 +32,7 @@ class SoundDriver {
       }
 
       const reader = new FileReader();
-      reader.readAsArrayBuffer(this.audiFile);
+      reader.readAsArrayBuffer(this.audioFile);
       reader.onload = (event: ProgressEvent<FileReader>) =>
         this.loadSound(event).then(buffer => {
           this.audioBuffer = buffer;
@@ -64,10 +60,9 @@ class SoundDriver {
   }
 
   public getCurrentTime() {
-    if (!this.isRunning) {
-      return this.pausedAt;
-    }
-    return this.context.currentTime - this.startedAt;
+    return this.isRunning
+      ? this.context.currentTime - this.startedAt
+      : this.pausedAt;
   }
 
   public seekTo(time: number) {
@@ -79,28 +74,26 @@ class SoundDriver {
       throw new Error('Incorrect time');
     }
 
-    if (this.isRunning) {
-      this.pause();
-    }
-
+    const wasPlaying = this.isRunning;
     this.pausedAt = time;
 
-    if (this.isRunning) {
-      this.play();
+    if (wasPlaying) {
+      this.play(true);
     }
   }
 
-  public async play() {
-    // создаёт звуковой источник, подключает его к громкости (GainNode) и воспроизводит звук
+  public async play(fromSeek = false) {
     if (!this.audioBuffer) {
       throw new Error(
-        'Play error. Audio buffer is not exists. Try to call loadSound before Play.'
+        'Play error. Audio buffer does not exist. Try to call loadSound before Play.'
       );
     }
 
-    if (this.isRunning) {
+    if (this.isRunning && !fromSeek) {
       return;
     }
+
+    this.stopBufferSource();
 
     this.gainNode = this.context.createGain();
 
@@ -108,42 +101,37 @@ class SoundDriver {
     this.bufferSource.buffer = this.audioBuffer;
 
     this.bufferSource.connect(this.gainNode);
-    this.bufferSource.connect(this.context.destination);
-
     this.gainNode.connect(this.context.destination);
 
     await this.context.resume();
     this.bufferSource.start(0, this.pausedAt);
 
     this.startedAt = this.context.currentTime - this.pausedAt;
-    this.pausedAt = 0;
-
     this.isRunning = true;
   }
 
   public async pause(reset?: boolean) {
-    if (!this.bufferSource || !this.gainNode) {
-      throw new Error(
-        'Pause - bufferSource is not exists. Maybe you forgot to call Play before?'
-      );
-    }
-
-    await this.context.suspend();
-
-    this.pausedAt = reset ? 0 : this.context.currentTime - this.startedAt;
-    this.bufferSource.stop(this.pausedAt);
-    this.bufferSource.disconnect();
-    this.gainNode.disconnect();
-
-    this.isRunning = false;
-  }
-
-  public changeVolume(volume: number) {
-    if (!this.gainNode) {
+    if (!this.bufferSource) {
       return;
     }
 
-    this.gainNode.gain.value = volume;
+    this.pausedAt = reset ? 0 : this.getCurrentTime();
+    this.stopBufferSource();
+    this.isRunning = false;
+  }
+
+  private stopBufferSource() {
+    if (this.bufferSource) {
+      this.bufferSource.stop();
+      this.bufferSource.disconnect();
+      this.bufferSource = undefined;
+    }
+  }
+
+  public changeVolume(volume: number) {
+    if (this.gainNode) {
+      this.gainNode.gain.value = volume;
+    }
   }
 
   public drawChart() {
