@@ -1,0 +1,138 @@
+.dropZone {
+  width: 80%;
+  max-width: 500px;
+  padding: 40px;
+  border: 3px dashed #007bff;
+  border-radius: 12px;
+  text-align: center;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin: 20px auto;
+}
+
+.dropZone p {
+  font-size: 18px;
+  margin: 0;
+}
+
+.dropZone input {
+  display: none;
+}
+
+.dropZone.active {
+  border-color: #00fbff;
+  background: linear-gradient(to right, #0179f9, #01f7e6df);
+}
+
+.soundEditor {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+}
+
+.fileInputContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileLabel {
+  background: linear-gradient(to right, #00a2ff, #00ffcc);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2);
+}
+
+.fileLabel:hover {
+  background: linear-gradient(to right, #00a2ff, #00ffcc);
+  transform: scale(1.05);
+}
+
+.fileLabel:active {
+  transform: scale(0.95);
+}
+
+.controllPanel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(20, 20, 20, 0.8);
+  border-radius: 12px;
+  padding: 12px 20px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.button {
+  background: linear-gradient(to right, #00a2ff, #00ffcc);
+  color: black;
+  font-weight: bold;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 8px rgba(0, 162, 255, 0.5);
+  text-transform: uppercase;
+}
+
+.button:hover {
+  background: linear-gradient(to right, #00ffcc, #00a2ff);
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.8);
+  transform: translateY(-2px);
+}
+
+.button:active {
+  transform: scale(0.95);
+}
+
+.volumeSlider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100px;
+  height: 6px;
+  background: linear-gradient(to right, #00a2ff, #00ffcc);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volumeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+}
+
+.loadingText {
+  font-size: 18px;
+  font-weight: bold;
+  color: #007bff;
+  text-align: center;
+  margin-top: 40px;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

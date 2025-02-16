@@ -1,37 +1,61 @@
 import React, { useCallback, useState, useRef } from 'react';
 import SoundDriver from './SoundDriver';
 
+import styles from './Player.module.css';
+
 function Player() {
-  const soundController = useRef<undefined | SoundDriver>(undefined);
+  const soundController = useRef<SoundDriver | undefined>(undefined);
   const [loading, setLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const uploadAudio = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const { files } = event.target;
-      if (!files || files.length === 0) {
-        return;
-      }
+  const uploadAudio = useCallback(async (audioFile: File | null) => {
+    if (!audioFile || !audioFile.type.includes('audio')) {
+      console.error('Wrong audio file');
+      return;
+    }
 
-      setLoading(true);
+    setLoading(true);
 
-      const audioFile = files[0];
+    const soundInstance = new SoundDriver(audioFile);
+    try {
+      await soundInstance.init(document.getElementById('waveContainer'));
+      soundController.current = soundInstance;
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+      soundInstance.drawChart();
+    }
+  }, []);
 
-      if (!audioFile || !audioFile.type.includes('audio')) {
-        throw new Error('Wrong audio file');
-      }
+  const handleFileInput = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0] || null;
+      uploadAudio(file);
+    },
+    [uploadAudio]
+  );
 
-      const soundInstance = new SoundDriver(audioFile);
-      try {
-        await soundInstance.init(document.getElementById('waveContainer'));
-        soundController.current = soundInstance;
-      } catch (err: unknown) {
-        console.log(err);
-      } finally {
-        setLoading(false);
-        soundInstance.drawChart();
-      }
+  const handleDragOver = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsDragging(true);
     },
     []
+  );
+
+  const handleDragLeave = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsDragging(false);
+      const file = event.dataTransfer.files?.[0] || null;
+      uploadAudio(file);
+    },
+    [uploadAudio]
   );
 
   const togglePlayer = useCallback(
@@ -51,29 +75,48 @@ function Player() {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       soundController.current?.changeVolume(Number(event.target.value));
     },
-    [soundController]
+    []
   );
 
   return (
     <div style={{ width: '100%' }}>
       {!soundController.current && (
-        <div style={{ textAlign: 'center' }}>
-          Choose a sound &nbsp;
-          <input
-            type='file'
-            name='sound'
-            onChange={uploadAudio}
-            accept='audio/*'
-          />
+        <div style={{ textAlign: 'center', marginTop: '80px' }}>
+          <div
+            className={`${styles.dropZone} ${isDragging ? styles.active : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <p>
+              {isDragging
+                ? 'Drop the file here'
+                : 'Drag and drop an audio file here or select'}
+            </p>
+            <input type='file' accept='audio/*' onChange={handleFileInput} />
+          </div>
+          <div className={styles.fileInputContainer}>
+            <input
+              type='file'
+              name='sound'
+              onChange={handleFileInput}
+              accept='audio/*'
+              className={styles.fileInput}
+              id='fileUpload'
+            />
+            <label htmlFor='fileUpload' className={styles.fileLabel}>
+              Choose audio file
+            </label>
+          </div>
         </div>
       )}
-      {loading && 'Loading...'}
+      {loading && <p className={styles.loadingText}>Loading...</p>}
 
       <div style={{ width: '100%', height: '392px' }} id='waveContainer' />
 
       {!loading && soundController.current && (
-        <div id='soundEditor'>
-          <div id='controllPanel'>
+        <div className={styles.soundEditor}>
+          <div className={styles.controllPanel}>
             <input
               type='range'
               onChange={onVolumeChange}
@@ -81,17 +124,30 @@ function Player() {
               min={-1}
               max={1}
               step={0.01}
+              className={styles.volumeSlider}
             />
 
-            <button type='button' onClick={togglePlayer('play')}>
+            <button
+              type='button'
+              className={styles.button}
+              onClick={togglePlayer('play')}
+            >
               Play
             </button>
 
-            <button type='button' onClick={togglePlayer('pause')}>
+            <button
+              type='button'
+              className={styles.button}
+              onClick={togglePlayer('pause')}
+            >
               Pause
             </button>
 
-            <button type='button' onClick={togglePlayer('stop')}>
+            <button
+              type='button'
+              className={styles.button}
+              onClick={togglePlayer('stop')}
+            >
               Stop
             </button>
           </div>
