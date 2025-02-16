@@ -7,12 +7,11 @@ class SoundDriver {
 
   private context: AudioContext;
 
-  private gainNode?: GainNode = undefined; // sound volume controller
+  private gainNode?: GainNode = undefined;
 
   private audioBuffer?: AudioBuffer = undefined;
 
-  private bufferSource?: AudioBufferSourceNode = undefined; // audio buffer source, to play the sound
-
+  private bufferSource?: AudioBufferSourceNode = undefined;
   private startedAt = 0;
 
   private pausedAt = 0;
@@ -26,12 +25,10 @@ class SoundDriver {
 
   static showError(error: string) {
     return error;
-    alert(
-      'SoundParser constructor error. Can not read audio file as ArrayBuffer'
-    );
   }
 
-  public init(parent: HTMLElement | null) { // загружает аудиофайл, декодирует звук и создаёт объект для его отображения (Drawer)
+  public init(parent: HTMLElement | null) {
+    // загружает аудиофайл, декодирует звук и создаёт объект для его отображения (Drawer)
     return new Promise((resolve, reject) => {
       if (!parent) {
         reject(new Error('Parent element not found'));
@@ -43,14 +40,20 @@ class SoundDriver {
       reader.onload = (event: ProgressEvent<FileReader>) =>
         this.loadSound(event).then(buffer => {
           this.audioBuffer = buffer;
-          this.drawer = new Drawer(buffer, parent , this.getCurrentTime.bind(this), this.seekTo.bind(this));
+          this.drawer = new Drawer(
+            buffer,
+            parent,
+            this.getCurrentTime.bind(this),
+            this.seekTo.bind(this)
+          );
           resolve(undefined);
         });
       reader.onerror = reject;
     });
   }
 
-  private loadSound(readerEvent: ProgressEvent<FileReader>) { // декодирует загруженный аудиофайл в формат, понятный браузеру
+  private loadSound(readerEvent: ProgressEvent<FileReader>) {
+    // декодирует загруженный аудиофайл в формат, понятный браузеру
     if (!readerEvent?.target?.result) {
       throw new Error('Can not read file');
     }
@@ -71,23 +74,24 @@ class SoundDriver {
     if (!this.audioBuffer) {
       throw new Error('Audio buffer not uploaded');
     }
-  
+
     if (time < 0 || time > this.audioBuffer.duration) {
-      throw new Error('incorrect time');
+      throw new Error('Incorrect time');
     }
-  
+
     if (this.isRunning) {
       this.pause();
     }
-  
+
     this.pausedAt = time;
-  
+
     if (this.isRunning) {
       this.play();
     }
   }
 
-  public async play() { // создаёт звуковой источник, подключает его к громкости (GainNode) и воспроизводит звук
+  public async play() {
+    // создаёт звуковой источник, подключает его к громкости (GainNode) и воспроизводит звук
     if (!this.audioBuffer) {
       throw new Error(
         'Play error. Audio buffer is not exists. Try to call loadSound before Play.'
