@@ -1,46 +1,106 @@
-# Getting Started with Create React App
+# Player Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is a React + TypeScript application designed for advanced audio playback and providing an interactive user interface. It utilizes the Web Audio API to process and visualize audio data, displaying a dynamic waveform in real-time. The application allows users to control playback with play, pause, stop functions and supports audio navigation by dragging the cursor along the waveform.
 
-## Available Scripts
+![image](https://github.com/user-attachments/assets/4fd05908-a955-4dac-b563-181a8f6703ec)
 
-In the project directory, you can run:
+## Project Structure
 
-### `npm start`
+```
+player/
+├── node_modules/          # Node.js dependencies
+├── public/               # Static files (e.g., index.html, favicon)
+├── src/                  # Main source code
+│   ├── components/       # Reusable components
+│   │   └── Player/       # Player-related components
+│   │       ├── Drawer.tsx           # Drawer component
+│   │       ├── interface.d.ts       # TypeScript interfaces
+│   │       ├── Player.module.css    # Player-specific styles
+│   │       ├── Player.tsx           # Main Player component
+│   │       └── SoundDriver.tsx      # Sound handling logic
+│   ├── pages/            # Page components
+│   │   └── HomePage.tsx  # Main landing page
+│   ├── types/            # TypeScript type definitions
+│   │   ├── d3.d.ts       # d3 library types
+│   │   └── declarations.d.ts # Global declarations
+│   ├── App.css           # Global styles
+│   ├── App.tsx           # Root component
+│   ├── index.css         # Base CSS styles
+│   └── index.tsx         # Entry point
+├── .gitignore            # Git ignored files
+├── package-lock.json     # Locked dependencies
+├── package.json          # Project metadata and scripts
+├── README.md             # Project documentation
+└── tsconfig.json         # TypeScript configuration
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Getting Started
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+1. **Clone the repository:**
 
-### `npm test`
+   ```bash
+   git clone <repository-url>
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. **Install dependencies:**
 
-### `npm run build`
+   ```bash
+   npm install
+   ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. **Run the application:**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+   ```bash
+   npm run start
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+4. **Build for production:**
 
-### `npm run eject`
+   ```bash
+   npm run build
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Technologies Used
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- React
+- TypeScript
+- CSS Modules
+- D3.js (with type declarations)
+- Web Audio API (AudioContext)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Project Features
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- **Audio Playback and Control:**
+  - Uses the Web Audio API (`AudioContext`) to handle audio streams.
+  - Supports play, pause, and volume adjustments.
+  - Enables audio seeking via a draggable progress bar.
 
-## Learn More
+- **Component-Based Structure:**
+  - Modularized architecture for better code maintainability.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- **Type-Safe Development:**
+  - Uses TypeScript for improved code reliability and type checking.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- **Responsive Design:**
+  - Styled using CSS Modules to ensure scoped and maintainable styles.
+
+## Component Overview
+
+- **Drawer.tsx:**
+  - A sliding panel for additional controls and settings.
+
+- **Player.tsx:**
+  - Main component for handling audio playback.
+  - Manages the `AudioContext` and handles user interactions (play/pause, volume).
+
+- **SoundDriver.tsx:**
+  - Encapsulates logic for interfacing with the Web Audio API.
+  - Initializes and manages the `AudioContext`, handling audio loading and playback.
+
+- **HomePage.tsx:**
+  - Landing page that renders the `Player` component.
+
+## Contribution
+
+Contributions are welcome! Feel free to open issues or submit pull requests.
+
